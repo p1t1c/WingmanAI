@@ -1,0 +1,8 @@
+[{
+      "relation": ["delegate_permission/common.handle_all_urls"],
+      "target": {
+        "namespace": "android_app",
+        "package_name": "app.run.us_central1.wingman_app_176799438140.twa",
+        "sha256_cert_fingerprints": ["55:9E:57:50:9F:36:EE:D0:53:4E:39:E3:E4:12:14:0B:EC:21:40:8C:88:FE:C8:AA:A0:74:FD:9C:A2:23:59:58"]
+      }
+}]

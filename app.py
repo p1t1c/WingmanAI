@@ -86,6 +86,16 @@ def _require_persona(persona_id: int):
 
 # ---------- Pages ----------
 
+@app.route('/sw.js')
+def sw():
+    """Serve the service worker from the root."""
+    return app.send_static_file('sw.js')
+
+@app.route('/.well-known/assetlinks.json')
+def assetlinks():
+    """Serve the Digital Asset Links verification file."""
+    return app.send_static_file('assetlinks.json')
+
 @app.route("/")
 def landing() -> str:
     """Public landing page."""
@@ -554,4 +564,5 @@ def server_error(_e):
 
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000, debug=True)
+    port = int(os.environ.get("PORT", 8080))
+    app.run(host="0.0.0.0", port=port, debug=False)
