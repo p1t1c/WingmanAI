@@ -32,7 +32,11 @@ a:hover { text-decoration: underline; }
   background: rgba(11,11,15,.85); backdrop-filter: blur(10px);
 }
 .brand { font-weight: 900; font-size: 1.15rem; color: var(--text); letter-spacing: -.02em; }
-.topbar nav { display: flex; gap: 8px; flex-wrap: wrap; }
+.topbar nav { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+@media (max-width: 480px) {
+  .topbar { padding: 10px 14px; }
+  .topbar nav .btn, .topbar nav .navlink { padding: 8px 10px; font-size: 13px; }
+}
 
 /* Buttons */
 .btn {
@@ -66,6 +70,48 @@ a:hover { text-decoration: underline; }
 .lede { color: var(--muted); max-width: 620px; margin: 0 auto 28px; font-size: 1.05rem; }
 .microcopy { margin-top: 14px; color: var(--muted); font-size: .9rem; }
 .foot { text-align: center; color: var(--muted); padding: 30px 20px; }
+
+/* Landing trio cards */
+.trio {
+  display: grid; gap: 14px; grid-template-columns: 1fr;
+  max-width: 1100px; margin: 16px auto 0; padding: 0 20px 32px;
+}
+@media (min-width: 720px) { .trio { grid-template-columns: repeat(3, 1fr); } }
+.trio .card {
+  background: var(--panel); border: 1px solid #21212d; border-radius: var(--radius);
+  padding: 22px;
+}
+.trio .card .emoji { font-size: 32px; margin-bottom: 6px; }
+.trio .card h3 { margin: 0 0 6px; }
+.trio .card p { color: var(--muted); margin: 0; }
+
+/* Personalities chips */
+.personalities {
+  max-width: 880px; margin: 24px auto 0; padding: 20px;
+  text-align: center;
+}
+.personalities h2 {
+  font-size: clamp(1.2rem, 3vw, 1.6rem); letter-spacing: -.02em;
+  margin: 0 0 14px;
+}
+.pchips {
+  display: flex; flex-wrap: wrap; gap: 8px; justify-content: center;
+}
+.chip {
+  padding: 8px 14px; border-radius: 999px;
+  background: var(--panel-2); border: 1px solid #2a2a36;
+  font-weight: 700; font-size: 14px;
+}
+
+/* Big CTA */
+.bigcta {
+  text-align: center; padding: 60px 20px; margin-top: 16px;
+  background: radial-gradient(60% 80% at 50% 0%, rgba(255,45,135,.25), transparent 60%);
+}
+.bigcta h2 {
+  font-size: clamp(1.4rem, 4vw, 2.4rem); font-weight: 900;
+  letter-spacing: -.02em; margin: 0 0 18px;
+}
 
 /* Auth pages */
 .auth-card {
@@ -137,9 +183,10 @@ textarea { resize: vertical; min-height: 60px; }
 .empty-pane { color: var(--muted); padding: 40px 0; text-align: center; }
 .persona-head {
   display: flex; justify-content: space-between; align-items: start; gap: 12px;
-  margin-bottom: 16px;
+  margin-bottom: 16px; flex-wrap: wrap;
 }
-.persona-head h2 { margin: 0 0 6px; }
+.persona-head h2 { margin: 0 0 6px; word-break: break-word; }
+.persona-head .btn { flex-shrink: 0; }
 .desc { color: var(--muted); margin: 0; line-height: 1.5; }
 
 .block {
@@ -274,6 +321,7 @@ textarea { resize: vertical; min-height: 60px; }
 }
 .modal-card {
   position: relative; max-width: 520px; width: 100%;
+  max-height: calc(100vh - 40px); overflow-y: auto;
   background: var(--panel); border: 1px solid #21212d; border-radius: var(--radius);
   padding: 20px;
 }

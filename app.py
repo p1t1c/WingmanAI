@@ -435,8 +435,20 @@ def too_big(_e):
 
 
 @app.errorhandler(404)
-def not_found(_e):
-    return jsonify({"error": "not found"}), 404
+def not_found(e):
+    if request.path.startswith("/api/"):
+        return jsonify({"error": "not found"}), 404
+    return ("Nothing here. Take an L and go back.", 404)
+
+
+@app.errorhandler(500)
+def server_error(_e):
+    """Funny message instead of a 500 stack trace."""
+    if request.path.startswith("/api/"):
+        return jsonify({
+            "error": "Wingman pulled a hamstring. Refresh and try again."
+        }), 500
+    return ("Server tripped over its own feet. Try again in a sec.", 500)
 
 
 if __name__ == "__main__":
