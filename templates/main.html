@@ -12,6 +12,7 @@
   <nav>
     <a href="/app" class="navlink active">Suggestions</a>
     <a href="/coaching" class="navlink">Coaching</a>
+    <a href="/archives" class="navlink">Archives</a>
     <a href="/logout" class="navlink">Logout</a>
   </nav>
 </header>
@@ -41,7 +42,13 @@
       </header>
 
       <section class="block">
-        <h3>The chat so far</h3>
+        <div class="block-head">
+          <h3>The chat so far</h3>
+          <button class="btn btn-ghost btn-sm" id="btn-reset" type="button"
+            title="Archive the current chat and start fresh">
+            Reset chat
+          </button>
+        </div>
         <div id="chat" class="chat"></div>
         <details class="add-msg">
           <summary>+ Add messages</summary>

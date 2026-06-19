@@ -70,6 +70,7 @@ function bindMainEvents() {
   $("btn-add-msg").onclick = addMessageTyped;
   $("btn-upload-chat").onclick = uploadChatScreenshot;
   $("btn-suggest").onclick = generateSuggestions;
+  $("btn-reset").onclick = resetConversation;
   for (const tab of document.querySelectorAll(".modal-tabs .tab")) {
     tab.onclick = () => {
       for (const t of document.querySelectorAll(".modal-tabs .tab")) {
@@ -97,9 +98,20 @@ async function refreshPersonas() {
     for (const p of personas) {
       const li = document.createElement("li");
       li.dataset.id = p.id;
-      li.innerHTML = `<div class="name">${escapeHtml(p.name)}</div>
-        <div class="meta">${escapeHtml(p.source || "")}</div>`;
+      li.innerHTML = `
+        <div class="persona-row">
+          <div class="persona-text">
+            <div class="name">${escapeHtml(p.name)}</div>
+            <div class="meta">${escapeHtml(p.source || "")}</div>
+          </div>
+          <button class="persona-x" type="button" aria-label="Delete">&times;</button>
+        </div>`;
       li.onclick = () => selectPersona(p.id);
+      const x = li.querySelector(".persona-x");
+      x.onclick = (ev) => {
+        ev.stopPropagation();
+        deletePersonaById(p.id, p.name);
+      };
       if (state.personaId === p.id) li.classList.add("active");
       list.appendChild(li);
     }
@@ -313,17 +325,43 @@ async function makeInterviewPersona() {
 
 async function deletePersona() {
   if (!state.personaId) return;
-  if (!confirm("Delete this persona and everything with them?")) return;
+  await deletePersonaById(state.personaId, state.persona && state.persona.name);
+}
+
+async function deletePersonaById(id, name) {
+  const label = name ? `"${name}"` : "this persona";
+  if (!confirm(`Delete ${label} and everything with them? This cannot be undone.`)) return;
   try {
     showSpinner("Erasing the evidence...");
-    await apiDelete(`/api/persona/${state.personaId}`);
-    state.personaId = null;
-    state.persona = null;
-    $("persona-detail").classList.add("hidden");
-    $("empty-state").classList.remove("hidden");
+    await apiDelete(`/api/persona/${id}`);
+    if (state.personaId === id) {
+      state.personaId = null;
+      state.persona = null;
+      $("persona-detail").classList.add("hidden");
+      $("empty-state").classList.remove("hidden");
+    }
     await refreshPersonas();
   } catch {
     alert("Could not delete.");
+  } finally {
+    hideSpinner();
+  }
+}
+
+async function resetConversation() {
+  if (!state.personaId) return;
+  if (!confirm(
+    "Archive the current chat and start fresh? The old messages stay in DB and appear under Archives."
+  )) return;
+  try {
+    showSpinner("Stashing this in the vault...");
+    const r = await apiJson(`/api/persona/${state.personaId}/reset`, {});
+    if (r.archived_id == null) {
+      alert("Nothing to archive — chat was already empty.");
+    }
+    await selectPersona(state.personaId);
+  } catch {
+    alert("Could not reset.");
   } finally {
     hideSpinner();
   }
@@ -361,6 +399,134 @@ async function analyzeOldChat() {
     $("analyze-out").textContent = data.analysis;
   } catch {
     alert("Could not analyze. Try again.");
+  } finally {
+    hideSpinner();
+  }
+}
+
+// --- Archives page ---
+if ($("archive-list")) {
+  initArchives();
+}
+
+async function initArchives() {
+  try {
+    showSpinner("Loading the vault...");
+    const archives = await apiGet("/api/archives");
+    renderArchives(archives);
+  } catch {
+    $("archive-list").innerHTML =
+      '<li class="muted">Vault is offline. Reload?</li>';
+  } finally {
+    hideSpinner();
+  }
+}
+
+function renderArchives(items) {
+  const list = $("archive-list");
+  list.innerHTML = "";
+  if (!items || items.length === 0) {
+    const li = document.createElement("li");
+    li.className = "muted";
+    li.textContent = "No archived chats yet. Hit Reset chat on a persona to stash one here.";
+    list.appendChild(li);
+    return;
+  }
+  for (const a of items) {
+    const li = document.createElement("li");
+    li.className = "archive-item";
+    li.dataset.id = a.id;
+    const ended = (a.ended_at || "").replace("T", " ").slice(0, 16);
+    const vibeBadge = a.last_vibe != null
+      ? `<span class="vibe-badge">${a.last_vibe}</span>` : "";
+    li.innerHTML = `
+      <div class="archive-head">
+        <div>
+          <div class="archive-title">
+            ${escapeHtml(a.persona_name)} ${vibeBadge}
+          </div>
+          <div class="meta">
+            Closed ${escapeHtml(ended)} · ${a.msg_count} msgs
+            ${a.last_vibe_note ? "· " + escapeHtml(a.last_vibe_note) : ""}
+          </div>
+        </div>
+        <div class="archive-actions">
+          <button class="btn btn-ghost btn-sm" data-act="toggle" type="button">View</button>
+          <button class="btn btn-primary btn-sm" data-act="analyze" type="button">Analyze</button>
+          <button class="btn btn-ghost btn-sm" data-act="del" type="button">Delete</button>
+        </div>
+      </div>
+      <div class="archive-body hidden">
+        <div class="chat archive-chat"></div>
+        <div class="analyze-out"></div>
+      </div>
+    `;
+    li.querySelector('[data-act="toggle"]').onclick = () => toggleArchive(li, a.id);
+    li.querySelector('[data-act="analyze"]').onclick = () => analyzeArchive(li, a.id);
+    li.querySelector('[data-act="del"]').onclick = () => deleteArchive(li, a.id);
+    list.appendChild(li);
+  }
+}
+
+async function toggleArchive(li, convId) {
+  const body = li.querySelector(".archive-body");
+  const chat = li.querySelector(".archive-chat");
+  if (!body.classList.contains("hidden")) {
+    body.classList.add("hidden");
+    return;
+  }
+  if (!chat.dataset.loaded) {
+    try {
+      showSpinner("Pulling the messages...");
+      const conv = await apiGet(`/api/archives/${convId}`);
+      chat.innerHTML = "";
+      if (!conv.messages.length) {
+        chat.innerHTML = '<div class="chat-empty">No messages in this archive.</div>';
+      } else {
+        for (const m of conv.messages) {
+          const b = document.createElement("div");
+          b.className = "bubble " + (m.sender === "me" ? "me" : "them");
+          b.textContent = m.content;
+          chat.appendChild(b);
+        }
+      }
+      chat.dataset.loaded = "1";
+    } catch {
+      chat.innerHTML = '<div class="chat-empty">Could not load messages.</div>';
+    } finally {
+      hideSpinner();
+    }
+  }
+  body.classList.remove("hidden");
+}
+
+async function analyzeArchive(li, convId) {
+  const body = li.querySelector(".archive-body");
+  const out = li.querySelector(".analyze-out");
+  body.classList.remove("hidden");
+  try {
+    showSpinner("Wingman is dissecting the corpse...");
+    const r = await apiJson(`/api/archives/${convId}/analyze`, {});
+    out.textContent = r.analysis;
+  } catch {
+    out.textContent = "Analysis failed. Try again.";
+  } finally {
+    hideSpinner();
+  }
+}
+
+async function deleteArchive(li, convId) {
+  if (!confirm("Permanently delete this archived chat? Cannot be undone.")) return;
+  try {
+    showSpinner("Shredding...");
+    await apiDelete(`/api/archives/${convId}`);
+    li.remove();
+    if (!$("archive-list").children.length) {
+      $("archive-list").innerHTML =
+        '<li class="muted">No archived chats yet.</li>';
+    }
+  } catch {
+    alert("Could not delete that archive.");
   } finally {
     hideSpinner();
   }

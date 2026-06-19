@@ -142,6 +142,13 @@ def coaching_page() -> str:
     return render_template("coaching.html", username=session.get("username"))
 
 
+@app.route("/archives")
+@login_required
+def archives_page() -> str:
+    """Archives tab — list of past conversations, each individually analyzable."""
+    return render_template("archives.html", username=session.get("username"))
+
+
 # ---------- Persona API ----------
 
 @app.route("/api/personas")
@@ -346,6 +353,84 @@ def api_chat_screenshot(persona_id: int):
             db.add_message(persona_id, sender, content)
             saved += 1
     return jsonify({"saved": saved})
+
+
+@app.route("/api/persona/<int:persona_id>/reset", methods=["POST"])
+@login_required
+def api_reset_conversation(persona_id: int):
+    """End the persona's active conversation, archiving its messages + vibe scores."""
+    if _require_persona(persona_id) is None:
+        return jsonify({"error": "not found"}), 404
+    archived_id = db.reset_active_conversation(persona_id, current_user_id())
+    if archived_id is None:
+        return jsonify({
+            "ok": True,
+            "archived_id": None,
+            "note": "nothing to archive — chat was empty",
+        })
+    return jsonify({"ok": True, "archived_id": archived_id})
+
+
+@app.route("/api/archives")
+@login_required
+def api_list_archives():
+    """Return all archived (ended) conversations for the current user."""
+    rows = db.get_archives_for_user(current_user_id())
+    return jsonify(rows)
+
+
+@app.route("/api/archives/<int:conv_id>")
+@login_required
+def api_get_archive(conv_id: int):
+    """Return one archived conversation with its messages."""
+    conv = db.get_conversation(conv_id, current_user_id())
+    if conv is None:
+        return jsonify({"error": "not found"}), 404
+    msgs = db.get_messages_for_conversation(conv_id)
+    return jsonify({
+        "id": conv["id"],
+        "persona_id": conv["persona_id"],
+        "persona_name": conv["persona_name"],
+        "persona_description": conv["persona_description"],
+        "started_at": conv["started_at"],
+        "ended_at": conv["ended_at"],
+        "messages": [
+            {
+                "sender": m["sender"],
+                "content": m["content"],
+                "created_at": m["created_at"],
+            }
+            for m in msgs
+        ],
+    })
+
+
+@app.route("/api/archives/<int:conv_id>", methods=["DELETE"])
+@login_required
+def api_delete_archive(conv_id: int):
+    """Permanently delete an archived conversation."""
+    if not db.delete_conversation(conv_id, current_user_id()):
+        return jsonify({"error": "not found"}), 404
+    return jsonify({"ok": True})
+
+
+@app.route("/api/archives/<int:conv_id>/analyze", methods=["POST"])
+@login_required
+def api_analyze_archive(conv_id: int):
+    """Run the same analyze pipeline used for pasted chats on an archived session."""
+    conv = db.get_conversation(conv_id, current_user_id())
+    if conv is None:
+        return jsonify({"error": "not found"}), 404
+    msgs = db.get_messages_for_conversation(conv_id)
+    if not msgs:
+        return jsonify({"error": "no messages in this archive"}), 400
+    transcript_lines = []
+    for m in msgs:
+        who = "me" if m["sender"] == "me" else "them"
+        transcript_lines.append(f"{who}: {m['content']}")
+    transcript = "\n".join(transcript_lines)
+    analysis = ask_gemini(build_old_chat_analysis_prompt(transcript))
+    return jsonify({"analysis": analysis})
 
 
 @app.route("/api/analyze", methods=["POST"])

@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Archives — AI Wingman</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="app">
+<header class="topbar">
+  <a class="brand" href="/app">AI Wingman</a>
+  <nav>
+    <a href="/app" class="navlink">Suggestions</a>
+    <a href="/coaching" class="navlink">Coaching</a>
+    <a href="/archives" class="navlink active">Archives</a>
+    <a href="/logout" class="navlink">Logout</a>
+  </nav>
+</header>
+
+<main class="coaching">
+  <h1>Archives</h1>
+  <p class="microcopy">
+    Every reset chat lives here, ready to be analyzed solo. Expand a session,
+    hit Analyze, and get the funny breakdown — same pipeline as paste-a-chat.
+  </p>
+
+  <ul class="archive-list" id="archive-list">
+    <li class="muted">Loading the vault...</li>
+  </ul>
+</main>
+
+<div class="spinner hidden" id="spinner">
+  <div class="spinner-dot"></div><span id="spinner-msg">Cooking...</span>
+</div>
+<script src="{{ url_for('static', filename='app.js') }}"></script>
+</body>
+</html>

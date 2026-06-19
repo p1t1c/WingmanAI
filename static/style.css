@@ -179,6 +179,19 @@ textarea { resize: vertical; min-height: 60px; }
 .persona-list .name { font-weight: 600; }
 .persona-list .meta { color: var(--muted); font-size: 12px; }
 
+.persona-row {
+  display: flex; align-items: center; justify-content: space-between; gap: 8px;
+}
+.persona-text { min-width: 0; }
+.persona-x {
+  flex-shrink: 0; background: transparent; border: 1px solid transparent;
+  color: var(--muted); width: 28px; height: 28px; border-radius: 8px;
+  font-size: 1.2rem; line-height: 1; cursor: pointer; padding: 0;
+}
+.persona-x:hover {
+  color: var(--red); background: rgba(231,76,60,.12); border-color: rgba(231,76,60,.35);
+}
+
 .pane { padding: 20px; }
 .empty-pane { color: var(--muted); padding: 40px 0; text-align: center; }
 .persona-head {
@@ -194,6 +207,12 @@ textarea { resize: vertical; min-height: 60px; }
   padding: 16px; margin-bottom: 16px;
 }
 .block h3 { margin: 0 0 10px; }
+.block-head {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 10px; margin-bottom: 10px;
+}
+.block-head h3 { margin: 0; }
+.btn-sm { padding: 6px 12px; font-size: 13px; }
 
 /* Chat bubbles */
 .chat {
@@ -312,6 +331,33 @@ textarea { resize: vertical; min-height: 60px; }
   white-space: pre-wrap; color: var(--text); margin-top: 14px;
   line-height: 1.55;
 }
+
+/* Archives page */
+.archive-list { list-style: none; padding: 0; margin: 16px 0 0; display: grid; gap: 10px; }
+.archive-list li.muted {
+  background: transparent; border: 1px dashed #2a2a36;
+  border-radius: 10px; padding: 14px; text-align: center; color: var(--muted);
+}
+.archive-item {
+  background: var(--panel); border: 1px solid #21212d; border-radius: var(--radius);
+  padding: 14px;
+}
+.archive-head {
+  display: flex; align-items: start; justify-content: space-between; gap: 10px;
+  flex-wrap: wrap;
+}
+.archive-title {
+  font-weight: 700; font-size: 1.05rem; display: flex; align-items: center; gap: 8px;
+}
+.vibe-badge {
+  font-size: 12px; font-weight: 800;
+  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+  padding: 0 6px; border: 1px solid rgba(255,45,135,.35); border-radius: 999px;
+}
+.archive-actions { display: flex; gap: 6px; flex-wrap: wrap; }
+.archive-body { margin-top: 12px; display: grid; gap: 10px; }
+.archive-chat { max-height: 280px; }
 
 /* Modal */
 .modal {
