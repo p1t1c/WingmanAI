@@ -20,6 +20,7 @@ from flask import (
 from werkzeug.security import check_password_hash, generate_password_hash
 
 import db
+from gemini import ask_gemini, build_persona_from_interview_prompt
 
 load_dotenv()
 
@@ -40,7 +41,7 @@ def sanitize_text(value: str | None, max_len: int = 2000) -> str:
 
 
 def login_required(f: Callable) -> Callable:
-    """Redirect to /login if no session, or 401 for API routes."""
+    """Redirect to /login if no session, or return 401 JSON for /api/ routes."""
     @wraps(f)
     def wrapper(*args, **kwargs):
         if "user_id" not in session:
@@ -54,6 +55,11 @@ def login_required(f: Callable) -> Callable:
 def current_user_id() -> int:
     """Return the current session's user id."""
     return int(session["user_id"])
+
+
+def _require_persona(persona_id: int):
+    """Return the persona row or None when not owned by current user."""
+    return db.get_persona(persona_id, current_user_id())
 
 
 # ---------- Pages ----------
@@ -112,8 +118,85 @@ def logout():
 @app.route("/app")
 @login_required
 def main_app() -> str:
-    """Authed app shell (filled out in later phases)."""
+    """Main app — persona list + suggestion UI."""
     return render_template("main.html", username=session.get("username"))
+
+
+# ---------- Persona API ----------
+
+@app.route("/api/personas")
+@login_required
+def api_list_personas():
+    """Return the current user's personas as JSON."""
+    rows = db.get_personas_for_user(current_user_id())
+    return jsonify([
+        {
+            "id": r["id"],
+            "name": r["name"],
+            "description": r["description"],
+            "source": r["source"],
+            "created_at": r["created_at"],
+        }
+        for r in rows
+    ])
+
+
+@app.route("/api/persona/<int:persona_id>")
+@login_required
+def api_get_persona(persona_id: int):
+    """Return a single persona with its messages + latest vibe."""
+    persona = _require_persona(persona_id)
+    if persona is None:
+        return jsonify({"error": "not found"}), 404
+    msgs = db.get_messages(persona_id)
+    vibe = db.get_latest_vibe(persona_id)
+    return jsonify({
+        "id": persona["id"],
+        "name": persona["name"],
+        "description": persona["description"],
+        "source": persona["source"],
+        "messages": [
+            {
+                "sender": m["sender"],
+                "content": m["content"],
+                "created_at": m["created_at"],
+            }
+            for m in msgs
+        ],
+        "vibe": {"score": vibe["score"], "note": vibe["note"]} if vibe else None,
+    })
+
+
+@app.route("/api/persona/<int:persona_id>", methods=["DELETE"])
+@login_required
+def api_delete_persona(persona_id: int):
+    """Delete a persona and all of their messages + vibe history."""
+    if _require_persona(persona_id) is None:
+        return jsonify({"error": "not found"}), 404
+    db.delete_persona(persona_id, current_user_id())
+    return jsonify({"ok": True})
+
+
+@app.route("/api/persona/interview", methods=["POST"])
+@login_required
+def api_persona_interview():
+    """Create a persona from 5 interview answers; Gemini writes the description."""
+    data = request.get_json(silent=True) or {}
+    name = sanitize_text(data.get("name"), 60)
+    if not name:
+        return jsonify({"error": "name is required"}), 400
+    answers = {
+        "name": name,
+        "where": sanitize_text(data.get("where"), 300),
+        "vibe": sanitize_text(data.get("vibe"), 300),
+        "stage": sanitize_text(data.get("stage"), 300),
+        "extra": sanitize_text(data.get("extra"), 500),
+    }
+    description = ask_gemini(build_persona_from_interview_prompt(answers))
+    persona_id = db.create_persona(
+        current_user_id(), name, description, "conversation"
+    )
+    return jsonify({"id": persona_id, "name": name, "description": description})
 
 
 if __name__ == "__main__":

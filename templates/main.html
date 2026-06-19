@@ -14,9 +14,64 @@
     <a href="/logout" class="navlink">Logout</a>
   </nav>
 </header>
-<main class="pane">
-  <h1>Hi {{ username }}. App shell loaded.</h1>
-  <p class="microcopy">Personas and suggestions land here in the next phase.</p>
+
+<main class="layout">
+  <aside class="sidebar">
+    <div class="sidebar-head">
+      <h2>Targets</h2>
+      <button class="btn btn-primary" id="btn-new-persona">+ New</button>
+    </div>
+    <ul id="persona-list" class="persona-list"></ul>
+  </aside>
+
+  <section class="pane">
+    <div class="empty-pane" id="empty-state">
+      <h2>Pick a persona, or make one.</h2>
+      <p>Every great rizz starts with a target. Hit + New to create one.</p>
+    </div>
+
+    <article class="persona-detail hidden" id="persona-detail">
+      <header class="persona-head">
+        <div>
+          <h2 id="persona-name"></h2>
+          <p id="persona-desc" class="desc"></p>
+        </div>
+        <button class="btn btn-ghost" id="btn-delete">Delete</button>
+      </header>
+    </article>
+  </section>
 </main>
+
+<!-- New persona modal -->
+<div class="modal hidden" id="persona-modal">
+  <div class="modal-card">
+    <button class="modal-close" id="btn-close-modal" aria-label="Close">&times;</button>
+    <h3>New persona</h3>
+    <div class="modal-body">
+      <label>Their name or nickname
+        <input id="i-name" maxlength="60" placeholder="Sam from Hinge">
+      </label>
+      <label>Where did you meet?
+        <input id="i-where" maxlength="300" placeholder="dating app / IRL / friend's party">
+      </label>
+      <label>Their vibe in a few words
+        <input id="i-vibe" maxlength="300" placeholder="ironic, into rock climbing, way too into the Sopranos">
+      </label>
+      <label>Current stage
+        <input id="i-stage" maxlength="300" placeholder="been talking 4 days, no meet yet">
+      </label>
+      <label>Anything extra (red flags? inside jokes? shared interests?)
+        <textarea id="i-extra" rows="2" maxlength="500"></textarea>
+      </label>
+      <button class="btn btn-primary btn-xl" id="btn-make-interview">Create persona</button>
+    </div>
+  </div>
+</div>
+
+<div class="spinner hidden" id="spinner">
+  <div class="spinner-dot"></div><span id="spinner-msg">Cooking...</span>
+</div>
+
+<script src="{{ url_for('static', filename='app.js') }}"></script>
 </body>
 </html>
