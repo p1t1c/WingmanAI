@@ -32,6 +32,22 @@
     <h3>Per-target vibe</h3>
     <ul id="persona-stats" class="persona-stats"></ul>
   </section>
+
+  <section class="block">
+    <h3>Got a past chat? Paste it and let Wingman dissect it.</h3>
+    <p class="microcopy">
+      Copy a raw chat from any app, paste below. We'll tell you what went
+      right, what went wrong, and one thing you should have said differently.
+    </p>
+    <textarea id="old-chat" rows="6" maxlength="8000"
+      placeholder="me: hey&#10;them: hi&#10;me: how was your weekend&#10;them: good u?&#10;..."></textarea>
+    <div class="row-end">
+      <button class="btn btn-primary" id="btn-analyze" type="button">
+        Diagnose this disaster
+      </button>
+    </div>
+    <div id="analyze-out" class="analyze-out"></div>
+  </section>
 </main>
 
 <div class="spinner hidden" id="spinner">

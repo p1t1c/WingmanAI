@@ -25,6 +25,7 @@ from gemini import (
     ask_gemini,
     build_chat_extraction_prompt,
     build_coaching_prompt,
+    build_old_chat_analysis_prompt,
     build_persona_from_image_prompt,
     build_persona_from_interview_prompt,
     build_suggestions_prompt,
@@ -345,6 +346,18 @@ def api_chat_screenshot(persona_id: int):
             db.add_message(persona_id, sender, content)
             saved += 1
     return jsonify({"saved": saved})
+
+
+@app.route("/api/analyze", methods=["POST"])
+@login_required
+def api_analyze():
+    """Analyze a raw pasted chat — funny breakdown + what went right/wrong."""
+    data = request.get_json(silent=True) or {}
+    raw = sanitize_text(data.get("text"), 8000)
+    if len(raw) < 20:
+        return jsonify({"error": "paste a bit more text — at least 20 chars"}), 400
+    analysis = ask_gemini(build_old_chat_analysis_prompt(raw))
+    return jsonify({"analysis": analysis})
 
 
 @app.route("/api/coaching")

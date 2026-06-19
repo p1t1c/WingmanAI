@@ -260,6 +260,11 @@ textarea { resize: vertical; min-height: 60px; }
 .trend-flat { color: var(--muted); margin-left: 6px; }
 
 .roast { white-space: pre-wrap; color: var(--text); line-height: 1.55; }
+.row-end { display: flex; justify-content: flex-end; margin-top: 10px; }
+.analyze-out {
+  white-space: pre-wrap; color: var(--text); margin-top: 14px;
+  line-height: 1.55;
+}
 
 /* Modal */
 .modal {

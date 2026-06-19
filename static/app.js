@@ -345,6 +345,25 @@ async function initCoaching() {
   } finally {
     hideSpinner();
   }
+  const btn = $("btn-analyze");
+  if (btn) btn.onclick = analyzeOldChat;
+}
+
+async function analyzeOldChat() {
+  const text = $("old-chat").value.trim();
+  if (text.length < 20) {
+    alert("Paste a bit more — at least 20 characters.");
+    return;
+  }
+  try {
+    showSpinner("Wingman is reading the wreckage...");
+    const data = await apiJson("/api/analyze", { text });
+    $("analyze-out").textContent = data.analysis;
+  } catch {
+    alert("Could not analyze. Try again.");
+  } finally {
+    hideSpinner();
+  }
 }
 
 function renderStats(stats) {
