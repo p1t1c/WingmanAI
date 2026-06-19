@@ -152,6 +152,121 @@ a:hover { text-decoration: underline; }
   font-size: clamp(1.4rem, 4vw, 2.4rem); font-weight: 900;
   letter-spacing: -.02em; margin: 0 0 18px;
 }
+.bigcta .microcopy { margin-top: 14px; }
+
+/* Stats strip */
+.stats-strip {
+  display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px;
+  max-width: 1100px; margin: 24px auto 0; padding: 18px 20px;
+  border-top: 1px solid #20202a; border-bottom: 1px solid #20202a;
+}
+@media (min-width: 720px) {
+  .stats-strip { grid-template-columns: repeat(4, 1fr); }
+}
+.stats-strip > div {
+  display: flex; flex-direction: column; align-items: center; gap: 2px;
+  text-align: center;
+}
+.stats-strip strong {
+  font-size: clamp(1.4rem, 3.5vw, 2rem); font-weight: 900;
+  letter-spacing: -.02em;
+  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+.stats-strip span {
+  color: var(--muted); font-size: 12px; text-transform: uppercase;
+  letter-spacing: .08em;
+}
+
+/* Testimonials */
+.testimonials {
+  max-width: 1100px; margin: 40px auto 0; padding: 0 20px;
+}
+.testimonials h2 {
+  text-align: center; font-size: clamp(1.4rem, 3vw, 2rem);
+  letter-spacing: -.02em; margin: 0 0 22px;
+}
+.quotes {
+  display: grid; grid-template-columns: 1fr; gap: 14px;
+}
+@media (min-width: 720px) { .quotes { grid-template-columns: repeat(3, 1fr); } }
+.quote {
+  margin: 0; background: var(--panel); border: 1px solid #21212d;
+  border-radius: var(--radius); padding: 22px;
+}
+.quote blockquote {
+  margin: 0 0 12px; font-style: italic; font-size: 1.02rem; line-height: 1.5;
+  color: var(--text);
+}
+.quote figcaption { color: var(--muted); font-size: 13px; font-weight: 600; }
+
+/* Pricing */
+.pricing {
+  max-width: 1100px; margin: 56px auto 0; padding: 0 20px;
+}
+.pricing .kicker { text-align: center; display: block; }
+.pricing h2 {
+  text-align: center; font-size: clamp(1.6rem, 4vw, 2.4rem);
+  font-weight: 900; letter-spacing: -.03em; margin: 8px 0 6px;
+}
+.plans {
+  display: grid; grid-template-columns: 1fr; gap: 16px;
+  margin-top: 8px;
+}
+@media (min-width: 820px) {
+  .plans { grid-template-columns: repeat(3, 1fr); align-items: stretch; }
+}
+.plan {
+  position: relative; background: var(--panel); border: 1px solid #21212d;
+  border-radius: var(--radius); padding: 26px 22px; display: flex;
+  flex-direction: column; gap: 18px;
+}
+.plan-featured {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px var(--accent), 0 12px 40px -12px rgba(255,45,135,.4);
+  background: linear-gradient(180deg, rgba(255,45,135,.06), var(--panel) 40%);
+}
+.plan-unhinged {
+  border-color: rgba(231,76,60,.45);
+}
+.plan-badge {
+  position: absolute; top: -11px; left: 50%; transform: translateX(-50%);
+  background: var(--accent); color: white;
+  font-size: 11px; font-weight: 800; letter-spacing: .1em;
+  text-transform: uppercase; padding: 4px 10px; border-radius: 999px;
+  white-space: nowrap;
+}
+.plan-head { display: grid; gap: 4px; }
+.plan-dot { font-size: 22px; }
+.plan-head h3 {
+  margin: 0; font-size: 1.6rem; font-weight: 900; letter-spacing: -.02em;
+}
+.plan-price { margin: 8px 0 4px; display: flex; align-items: baseline; gap: 4px; }
+.plan-price .amount {
+  font-size: 2.4rem; font-weight: 900; letter-spacing: -.03em; color: var(--text);
+}
+.plan-price .per { color: var(--muted); font-weight: 700; }
+.plan-tag { margin: 0; color: var(--muted); font-size: 13px; font-style: italic; }
+.plan-features {
+  list-style: none; padding: 0; margin: 0; display: grid; gap: 8px;
+}
+.plan-features li { font-size: 14px; line-height: 1.45; }
+.plan-features li.muted { color: var(--muted); text-decoration: line-through; }
+.plan .btn { margin-top: auto; }
+
+/* Fake press */
+.press {
+  max-width: 880px; margin: 48px auto 0; padding: 0 20px; text-align: center;
+}
+.press h3 {
+  font-size: 13px; color: var(--muted); text-transform: uppercase;
+  letter-spacing: .12em; margin: 0 0 14px;
+}
+.press-list {
+  list-style: none; padding: 0; margin: 0; display: flex; flex-wrap: wrap;
+  justify-content: center; gap: 8px 18px; color: var(--muted); font-size: 14px;
+}
+.press-list li span { color: var(--text); font-style: italic; font-weight: 600; }
 
 /* Auth pages */
 .auth-card {
