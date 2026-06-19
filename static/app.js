@@ -71,6 +71,8 @@ function bindMainEvents() {
   $("btn-upload-chat").onclick = uploadChatScreenshot;
   $("btn-suggest").onclick = generateSuggestions;
   $("btn-reset").onclick = resetConversation;
+  $("personality").onchange = togglePersonalityCustomInput;
+  $("intensity").oninput = () => { $("intensity-val").textContent = $("intensity").value; };
   for (const tab of document.querySelectorAll(".modal-tabs .tab")) {
     tab.onclick = () => {
       for (const t of document.querySelectorAll(".modal-tabs .tab")) {
@@ -278,13 +280,24 @@ async function addMessageTyped() {
   }
 }
 
+function togglePersonalityCustomInput() {
+  const isCustom = $("personality").value === "custom";
+  $("custom-personality-row").classList.toggle("hidden", !isCustom);
+}
+
 async function generateSuggestions() {
   if (!state.personaId) return;
   const personality = $("personality").value;
+  const intensity = parseInt($("intensity").value, 10);
+  const customPersonality = $("custom-personality").value.trim();
+  if (personality === "custom" && !customPersonality) {
+    alert("Describe the personality you want first.");
+    return;
+  }
   try {
     showSpinner("Wingman is thinking too hard...");
     const data = await apiJson(`/api/persona/${state.personaId}/suggest`, {
-      personality,
+      personality, intensity, custom_personality: customPersonality,
     });
     renderVibe(data.vibe_score, data.vibe_note);
     renderReplies(data.replies);

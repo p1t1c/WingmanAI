@@ -266,10 +266,18 @@ def api_suggest(persona_id: int):
         return jsonify({"error": "not found"}), 404
     data = request.get_json(silent=True) or {}
     personality = sanitize_text(data.get("personality"), 30).lower() or "funny"
+    custom_personality = sanitize_text(data.get("custom_personality"), 200)
+    try:
+        intensity = int(data.get("intensity", 70))
+    except (TypeError, ValueError):
+        intensity = 70
+    intensity = max(0, min(100, intensity))
 
     msgs_rows = db.get_messages(persona_id)
     msgs = [{"sender": m["sender"], "content": m["content"]} for m in msgs_rows]
-    prompt = build_suggestions_prompt(persona["description"] or "", msgs, personality)
+    prompt = build_suggestions_prompt(
+        persona["description"] or "", msgs, personality, intensity, custom_personality
+    )
     raw = ask_gemini(prompt, temperature=1.0)
     parsed = parse_json_or_fallback(raw, FALLBACK_REPLIES)
 

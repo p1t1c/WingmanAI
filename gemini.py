@@ -53,6 +53,23 @@ PERSONALITY_HINTS: dict[str, str] = {
     ),
 }
 
+# Intensity (0-100) dials how hard the chosen personality is leaned into.
+INTENSITY_STEPS: list[tuple[int, str]] = [
+    (20, "Barely apply it — mostly neutral, just a whisper of the personality."),
+    (45, "Apply it lightly — keep it safe with a hint of the personality's flavor."),
+    (70, "Apply it at full, normal strength."),
+    (90, "Turn it up — lean hard into the personality, take more risk."),
+    (101, "Max it out — go all the way, zero chill, full bit."),
+]
+
+
+def _intensity_hint(intensity: int) -> str:
+    """Describe how hard to lean into the personality at a given 0-100 dial."""
+    for ceiling, hint in INTENSITY_STEPS:
+        if intensity <= ceiling:
+            return hint
+    return INTENSITY_STEPS[-1][1]
+
 
 _client: genai.Client | None = None
 
@@ -170,10 +187,25 @@ def build_suggestions_prompt(
     persona_description: str,
     messages: list[dict[str, str]],
     personality: str = "funny",
+    intensity: int = 70,
+    custom_personality: str = "",
 ) -> str:
-    """Ask Gemini for a vibe score (0-100) + 3 labelled replies as strict JSON."""
-    personality = personality if personality in PERSONALITY_HINTS else "funny"
-    hint = PERSONALITY_HINTS[personality]
+    """Ask Gemini for a vibe score (0-100) + 3 labelled replies as strict JSON.
+
+    ``intensity`` (0-100) dials how hard the personality filter is applied.
+    When ``personality`` is "custom", ``custom_personality`` is the user's own
+    free-text description and is used verbatim instead of a built-in hint.
+    """
+    if personality == "custom" and custom_personality:
+        label = custom_personality
+        hint = f"Act exactly like this: {custom_personality}."
+    else:
+        personality = personality if personality in PERSONALITY_HINTS else "funny"
+        label = personality
+        hint = PERSONALITY_HINTS[personality]
+
+    intensity = max(0, min(100, intensity))
+    dial = _intensity_hint(intensity)
 
     transcript_lines: list[str] = []
     for m in messages[-30:]:
@@ -186,7 +218,8 @@ def build_suggestions_prompt(
         "persona description and the conversation so far.\n\n"
         f"PERSONA:\n{persona_description or '(no description)'}\n\n"
         f"CONVERSATION:\n{transcript}\n\n"
-        f"PERSONALITY FILTER: {personality} — {hint}\n\n"
+        f"PERSONALITY FILTER: {label} — {hint}\n"
+        f"INTENSITY {intensity}/100: {dial}\n\n"
         "Return ONLY valid JSON — no markdown fences, no commentary — in "
         "this exact shape:\n"
         "{\n"
@@ -198,9 +231,9 @@ def build_suggestions_prompt(
         '    {"label": "unhinged", "text": "<an absolutely deranged reply>"}\n'
         "  ]\n"
         "}\n"
-        "Rules: replies must match the personality filter, be in the user's "
-        "voice as ME, and be one to three sentences max. Avoid emoji spam. "
-        "vibe_score must be a number, not a string."
+        "Rules: replies must match the personality filter and intensity, be "
+        "in the user's voice as ME, and be one to three sentences max. Avoid "
+        "emoji spam. vibe_score must be a number, not a string."
     )
 
 
