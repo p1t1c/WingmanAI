@@ -222,6 +222,45 @@ textarea { resize: vertical; min-height: 60px; }
 .reply .actions { margin-top: 8px; display: flex; align-items: center; gap: 8px; }
 .copy-ok { color: var(--green); font-size: 12px; }
 
+/* Coaching page */
+.coaching { max-width: 920px; margin: 0 auto; padding: 24px 20px; }
+.coaching h1 { letter-spacing: -.02em; margin-bottom: 4px; }
+.stats-grid {
+  display: grid; gap: 12px; grid-template-columns: repeat(2, 1fr); margin: 16px 0;
+}
+@media (min-width: 720px) { .stats-grid { grid-template-columns: repeat(4, 1fr); } }
+.stat {
+  background: var(--panel); border: 1px solid #21212d; border-radius: var(--radius);
+  padding: 14px;
+}
+.stat .k {
+  color: var(--muted); font-size: 11px; text-transform: uppercase;
+  letter-spacing: .1em;
+}
+.stat .v {
+  font-size: 1.6rem; font-weight: 900; margin-top: 4px; letter-spacing: -.02em;
+}
+
+.persona-stats {
+  list-style: none; padding: 0; margin: 0; display: grid; gap: 8px;
+}
+.persona-stats li {
+  display: flex; justify-content: space-between; gap: 12px; align-items: center;
+  background: var(--panel-2); border-radius: 10px; padding: 10px 12px;
+  border: 1px solid #2a2a36;
+}
+.persona-stats li.muted {
+  color: var(--muted); justify-content: center;
+  background: transparent; border: 1px dashed #2a2a36;
+}
+.persona-stats .ps-name { color: var(--text); font-weight: 600; }
+.persona-stats .ps-vibe { color: var(--text); font-weight: 700; }
+.trend-up { color: var(--green); margin-left: 6px; }
+.trend-down { color: var(--red); margin-left: 6px; }
+.trend-flat { color: var(--muted); margin-left: 6px; }
+
+.roast { white-space: pre-wrap; color: var(--text); line-height: 1.55; }
+
 /* Modal */
 .modal {
   position: fixed; inset: 0; background: rgba(0,0,0,.6);

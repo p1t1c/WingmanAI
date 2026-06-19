@@ -328,3 +328,62 @@ async function deletePersona() {
     hideSpinner();
   }
 }
+
+// --- Coaching page ---
+if ($("stats-grid")) {
+  initCoaching();
+}
+
+async function initCoaching() {
+  try {
+    showSpinner("Diagnosing your texting...");
+    const data = await apiGet("/api/coaching");
+    renderStats(data.stats);
+    $("roast").textContent = data.roast;
+  } catch {
+    $("roast").textContent = "Diagnosis machine is offline. Reload?";
+  } finally {
+    hideSpinner();
+  }
+}
+
+function renderStats(stats) {
+  const grid = $("stats-grid");
+  grid.innerHTML = "";
+  const tiles = [
+    ["Total messages", stats.total_messages],
+    ["Sent by you", stats.my_messages],
+    ["Double-text rate", (stats.double_text_rate_pct ?? 0) + "%"],
+    ["Avg your length", stats.avg_my_message_chars + " ch"],
+  ];
+  for (const [k, v] of tiles) {
+    const div = document.createElement("div");
+    div.className = "stat";
+    div.innerHTML = `<div class="k">${escapeHtml(k)}</div>
+      <div class="v">${escapeHtml(String(v))}</div>`;
+    grid.appendChild(div);
+  }
+  const ul = $("persona-stats");
+  ul.innerHTML = "";
+  if (!stats.personas || stats.personas.length === 0) {
+    const li = document.createElement("li");
+    li.className = "muted";
+    li.textContent = "No personas yet. Make one over on Suggestions.";
+    ul.appendChild(li);
+    return;
+  }
+  for (const p of stats.personas) {
+    const li = document.createElement("li");
+    const trendClass = p.trend > 0 ? "trend-up" : p.trend < 0 ? "trend-down" : "trend-flat";
+    const arrow = p.trend > 0 ? "↑" : p.trend < 0 ? "↓" : "→";
+    const trendVal = p.trend ? Math.abs(p.trend) : "";
+    const latest = p.latest_vibe != null ? p.latest_vibe : "—";
+    li.innerHTML = `
+      <span class="ps-name">${escapeHtml(p.name)}
+        <span class="meta">(${p.messages_count} msgs)</span></span>
+      <span class="ps-vibe">${latest}
+        <span class="${trendClass}">${arrow}${trendVal}</span></span>
+    `;
+    ul.appendChild(li);
+  }
+}

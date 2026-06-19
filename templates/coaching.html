@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Coaching — AI Wingman</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="app">
+<header class="topbar">
+  <a class="brand" href="/app">AI Wingman</a>
+  <nav>
+    <a href="/app" class="navlink">Suggestions</a>
+    <a href="/coaching" class="navlink active">Coaching</a>
+    <a href="/logout" class="navlink">Logout</a>
+  </nav>
+</header>
+
+<main class="coaching">
+  <h1>Your texting, diagnosed.</h1>
+  <p class="microcopy">Stats pulled from your own chats inside this app.
+    The roast is freshly cooked.</p>
+
+  <div class="stats-grid" id="stats-grid"></div>
+
+  <section class="block">
+    <h3>The Roast</h3>
+    <p id="roast" class="roast">loading the verdict...</p>
+  </section>
+
+  <section class="block">
+    <h3>Per-target vibe</h3>
+    <ul id="persona-stats" class="persona-stats"></ul>
+  </section>
+</main>
+
+<div class="spinner hidden" id="spinner">
+  <div class="spinner-dot"></div><span id="spinner-msg">Cooking...</span>
+</div>
+<script src="{{ url_for('static', filename='app.js') }}"></script>
+</body>
+</html>

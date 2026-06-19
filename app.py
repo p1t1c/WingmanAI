@@ -24,6 +24,7 @@ from gemini import (
     FALLBACK_REPLIES,
     ask_gemini,
     build_chat_extraction_prompt,
+    build_coaching_prompt,
     build_persona_from_image_prompt,
     build_persona_from_interview_prompt,
     build_suggestions_prompt,
@@ -131,6 +132,13 @@ def logout():
 def main_app() -> str:
     """Main app — persona list + suggestion UI."""
     return render_template("main.html", username=session.get("username"))
+
+
+@app.route("/coaching")
+@login_required
+def coaching_page() -> str:
+    """Coaching tab — stats + funny roast."""
+    return render_template("coaching.html", username=session.get("username"))
 
 
 # ---------- Persona API ----------
@@ -337,6 +345,72 @@ def api_chat_screenshot(persona_id: int):
             db.add_message(persona_id, sender, content)
             saved += 1
     return jsonify({"saved": saved})
+
+
+@app.route("/api/coaching")
+@login_required
+def api_coaching():
+    """Compute texting stats and ask Gemini for a funny diagnosis."""
+    user_id = current_user_id()
+    personas = db.get_personas_for_user(user_id)
+    persona_stats: list[dict] = []
+    total_messages = 0
+    my_messages = 0
+    their_messages = 0
+    double_text_count = 0
+    my_len_sum = 0
+    my_len_count = 0
+
+    for p in personas:
+        msgs = db.get_messages(p["id"], limit=500)
+        history = db.get_vibe_history(p["id"])
+        latest_vibe = history[-1]["score"] if history else None
+        first_vibe = history[0]["score"] if history else None
+        trend = (
+            int(latest_vibe) - int(first_vibe)
+            if latest_vibe is not None and first_vibe is not None
+            else 0
+        )
+        persona_stats.append({
+            "name": p["name"],
+            "messages_count": len(msgs),
+            "latest_vibe": latest_vibe,
+            "first_vibe": first_vibe,
+            "trend": trend,
+        })
+        prev = None
+        for m in msgs:
+            total_messages += 1
+            if m["sender"] == "me":
+                my_messages += 1
+                my_len_sum += len(m["content"] or "")
+                my_len_count += 1
+                if prev == "me":
+                    double_text_count += 1
+            else:
+                their_messages += 1
+            prev = m["sender"]
+
+    avg_my_len = round(my_len_sum / my_len_count, 1) if my_len_count else 0
+    double_text_rate = (
+        round(100 * double_text_count / my_messages, 1) if my_messages else 0
+    )
+    stats = {
+        "personas": persona_stats,
+        "total_messages": total_messages,
+        "my_messages": my_messages,
+        "their_messages": their_messages,
+        "double_text_rate_pct": double_text_rate,
+        "avg_my_message_chars": avg_my_len,
+    }
+    if total_messages == 0:
+        roast = (
+            "No data, no roast. You haven't sent a single message inside the app. "
+            "Either add some chats or admit you're scared. We're rooting for you."
+        )
+    else:
+        roast = ask_gemini(build_coaching_prompt(stats))
+    return jsonify({"stats": stats, "roast": roast})
 
 
 # ---------- Error handlers ----------

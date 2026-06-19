@@ -96,7 +96,13 @@ def ask_gemini(
                 temperature=temperature,
             ),
         )
-        return (resp.text or "").strip()
+        text = (resp.text or "").strip()
+        if not text:
+            return (
+                "Wingman stared at the wall for a solid five seconds and "
+                "had nothing. Ask again."
+            )
+        return text
     except Exception as exc:  # noqa: BLE001  — funny fallback by design
         return (
             "Wingman tripped on his own shoelaces. "
