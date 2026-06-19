@@ -20,7 +20,13 @@ from flask import (
 from werkzeug.security import check_password_hash, generate_password_hash
 
 import db
-from gemini import ask_gemini, build_persona_from_interview_prompt
+from gemini import (
+    FALLBACK_REPLIES,
+    ask_gemini,
+    build_persona_from_interview_prompt,
+    build_suggestions_prompt,
+    parse_json_or_fallback,
+)
 
 load_dotenv()
 
@@ -197,6 +203,73 @@ def api_persona_interview():
         current_user_id(), name, description, "conversation"
     )
     return jsonify({"id": persona_id, "name": name, "description": description})
+
+
+@app.route("/api/persona/<int:persona_id>/messages", methods=["POST"])
+@login_required
+def api_add_messages(persona_id: int):
+    """Append one or more typed messages to a persona's conversation."""
+    if _require_persona(persona_id) is None:
+        return jsonify({"error": "not found"}), 404
+    data = request.get_json(silent=True) or {}
+    raw_msgs = data.get("messages") or []
+    if not isinstance(raw_msgs, list):
+        return jsonify({"error": "messages must be a list"}), 400
+    saved = 0
+    for m in raw_msgs:
+        if not isinstance(m, dict):
+            continue
+        sender = m.get("sender")
+        content = sanitize_text(m.get("content"), 2000)
+        if sender in ("me", "them") and content:
+            db.add_message(persona_id, sender, content)
+            saved += 1
+    return jsonify({"saved": saved})
+
+
+@app.route("/api/persona/<int:persona_id>/suggest", methods=["POST"])
+@login_required
+def api_suggest(persona_id: int):
+    """Generate a vibe score + 3 ranked replies. Persist the vibe score."""
+    persona = _require_persona(persona_id)
+    if persona is None:
+        return jsonify({"error": "not found"}), 404
+    data = request.get_json(silent=True) or {}
+    personality = sanitize_text(data.get("personality"), 30).lower() or "funny"
+
+    msgs_rows = db.get_messages(persona_id)
+    msgs = [{"sender": m["sender"], "content": m["content"]} for m in msgs_rows]
+    prompt = build_suggestions_prompt(persona["description"] or "", msgs, personality)
+    raw = ask_gemini(prompt, temperature=1.0)
+    parsed = parse_json_or_fallback(raw, FALLBACK_REPLIES)
+
+    try:
+        score = int(parsed.get("vibe_score", 50))
+    except (TypeError, ValueError):
+        score = 50
+    score = max(0, min(100, score))
+    note = sanitize_text(str(parsed.get("vibe_note", "")), 200) or "Vibes inconclusive."
+    db.add_vibe_score(persona_id, score, note)
+
+    raw_replies = parsed.get("replies") if isinstance(parsed, dict) else None
+    clean_replies: list[dict[str, str]] = []
+    for r in (raw_replies or [])[:3]:
+        if not isinstance(r, dict):
+            continue
+        label = sanitize_text(str(r.get("label", "")), 20).lower() or "safe"
+        if label not in ("safe", "bold", "unhinged"):
+            label = "safe"
+        text = sanitize_text(str(r.get("text", "")), 600)
+        if text:
+            clean_replies.append({"label": label, "text": text})
+    if not clean_replies:
+        clean_replies = FALLBACK_REPLIES["replies"]
+
+    return jsonify({
+        "vibe_score": score,
+        "vibe_note": note,
+        "replies": clean_replies,
+    })
 
 
 if __name__ == "__main__":

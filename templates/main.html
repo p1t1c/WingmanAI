@@ -38,6 +38,47 @@
         </div>
         <button class="btn btn-ghost" id="btn-delete">Delete</button>
       </header>
+
+      <section class="block">
+        <h3>The chat so far</h3>
+        <div id="chat" class="chat"></div>
+        <details class="add-msg">
+          <summary>+ Add messages</summary>
+          <div class="msg-form">
+            <div class="row">
+              <label>Sender
+                <select id="msg-sender">
+                  <option value="them">Them</option>
+                  <option value="me">Me</option>
+                </select>
+              </label>
+              <label>Message
+                <textarea id="msg-content" rows="2" maxlength="2000"
+                  placeholder="what did they say..."></textarea>
+              </label>
+            </div>
+            <button class="btn btn-primary" id="btn-add-msg">Add message</button>
+          </div>
+        </details>
+      </section>
+
+      <section class="block">
+        <h3>Wingman, do your thing</h3>
+        <div class="personality-row">
+          <label>Personality
+            <select id="personality">
+              <option value="funny">Funny</option>
+              <option value="sigma">Sigma</option>
+              <option value="romantic">Romantic</option>
+              <option value="italian_grandma">Italian Grandma</option>
+            </select>
+          </label>
+          <button class="btn btn-primary btn-xl" id="btn-suggest">
+            Score + 3 replies
+          </button>
+        </div>
+        <div id="suggest-out" class="suggest-out"></div>
+      </section>
     </article>
   </section>
 </main>

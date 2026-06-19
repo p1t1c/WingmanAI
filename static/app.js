@@ -57,6 +57,8 @@ function bindMainEvents() {
   $("btn-close-modal").onclick = () => $("persona-modal").classList.add("hidden");
   $("btn-make-interview").onclick = makeInterviewPersona;
   $("btn-delete").onclick = deletePersona;
+  $("btn-add-msg").onclick = addMessageTyped;
+  $("btn-suggest").onclick = generateSuggestions;
 }
 
 async function refreshPersonas() {
@@ -95,11 +97,120 @@ async function selectPersona(id) {
     $("persona-detail").classList.remove("hidden");
     $("persona-name").textContent = persona.name;
     $("persona-desc").textContent = persona.description || "(no description yet)";
+    renderChat(persona.messages);
+    $("suggest-out").innerHTML = "";
+    if (persona.vibe) {
+      renderVibe(persona.vibe.score, persona.vibe.note);
+    }
     for (const li of document.querySelectorAll("#persona-list li")) {
       li.classList.toggle("active", String(li.dataset.id) === String(id));
     }
   } catch (e) {
     alert("Couldn't load that persona. Try again.");
+  } finally {
+    hideSpinner();
+  }
+}
+
+function renderChat(messages) {
+  const chat = $("chat");
+  chat.innerHTML = "";
+  if (!messages || messages.length === 0) {
+    const empty = document.createElement("div");
+    empty.className = "chat-empty";
+    empty.textContent = "No messages yet. Add some so Wingman has something to work with.";
+    chat.appendChild(empty);
+    return;
+  }
+  for (const m of messages) {
+    const b = document.createElement("div");
+    b.className = "bubble " + (m.sender === "me" ? "me" : "them");
+    b.textContent = m.content;
+    chat.appendChild(b);
+  }
+  chat.scrollTop = chat.scrollHeight;
+}
+
+function renderVibe(score, note) {
+  const out = $("suggest-out");
+  let vibe = out.querySelector(".vibe");
+  if (!vibe) {
+    vibe = document.createElement("div");
+    vibe.className = "vibe";
+    vibe.innerHTML = `
+      <div class="score-wrap"><div class="score"></div><div class="score-label">vibe</div></div>
+      <div class="note"></div>
+    `;
+    out.prepend(vibe);
+  }
+  vibe.querySelector(".score").textContent = score;
+  vibe.querySelector(".note").textContent = note;
+}
+
+function renderReplies(replies) {
+  const out = $("suggest-out");
+  for (const r of out.querySelectorAll(".reply")) r.remove();
+  for (const r of replies) {
+    const div = document.createElement("div");
+    const label = (r.label || "safe").toLowerCase();
+    div.className = "reply " + label;
+    div.innerHTML = `
+      <div class="label">${escapeHtml(label)}</div>
+      <div class="text">${escapeHtml(r.text || "")}</div>
+      <div class="actions">
+        <button class="btn btn-ghost btn-copy" type="button">Copy</button>
+        <span class="copy-ok hidden">copied ✓</span>
+      </div>
+    `;
+    const btn = div.querySelector(".btn-copy");
+    const ok = div.querySelector(".copy-ok");
+    btn.onclick = async () => {
+      try {
+        await navigator.clipboard.writeText(r.text || "");
+        ok.classList.remove("hidden");
+        setTimeout(() => ok.classList.add("hidden"), 1500);
+      } catch {
+        alert("Browser blocked the copy. Highlight + Ctrl+C, sorry.");
+      }
+    };
+    out.appendChild(div);
+  }
+}
+
+async function addMessageTyped() {
+  if (!state.personaId) return;
+  const sender = $("msg-sender").value;
+  const content = $("msg-content").value.trim();
+  if (!content) {
+    alert("Type something first.");
+    return;
+  }
+  try {
+    showSpinner("Saving...");
+    await apiJson(`/api/persona/${state.personaId}/messages`, {
+      messages: [{ sender, content }],
+    });
+    $("msg-content").value = "";
+    await selectPersona(state.personaId);
+  } catch {
+    alert("Could not save that message.");
+  } finally {
+    hideSpinner();
+  }
+}
+
+async function generateSuggestions() {
+  if (!state.personaId) return;
+  const personality = $("personality").value;
+  try {
+    showSpinner("Wingman is thinking too hard...");
+    const data = await apiJson(`/api/persona/${state.personaId}/suggest`, {
+      personality,
+    });
+    renderVibe(data.vibe_score, data.vibe_note);
+    renderReplies(data.replies);
+  } catch {
+    alert("Suggestions failed. Wingman is taking a smoke break.");
   } finally {
     hideSpinner();
   }
