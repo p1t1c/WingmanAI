@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Login — AI Wingman</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="auth">
+<header class="topbar">
+  <a class="brand" href="/">AI Wingman</a>
+  <nav>
+    <a href="/register" class="btn btn-primary">Sign up</a>
+  </nav>
+</header>
+<main class="auth-card">
+  <h1>Welcome back, menace.</h1>
+  {% with messages = get_flashed_messages() %}
+    {% for m in messages %}<div class="flash">{{ m }}</div>{% endfor %}
+  {% endwith %}
+  <form method="post">
+    <label>Username
+      <input name="username" autocomplete="username" required>
+    </label>
+    <label>Password
+      <input name="password" type="password" autocomplete="current-password" required>
+    </label>
+    <button class="btn btn-primary btn-xl" type="submit">Log in</button>
+  </form>
+  <p class="microcopy">New here? <a href="/register">Make an account.</a></p>
+</main>
+</body>
+</html>

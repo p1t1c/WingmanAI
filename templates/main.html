@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AI Wingman</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="app">
+<header class="topbar">
+  <a class="brand" href="/app">AI Wingman</a>
+  <nav>
+    <a href="/app" class="navlink active">Suggestions</a>
+    <a href="/logout" class="navlink">Logout</a>
+  </nav>
+</header>
+<main class="pane">
+  <h1>Hi {{ username }}. App shell loaded.</h1>
+  <p class="microcopy">Personas and suggestions land here in the next phase.</p>
+</main>
+</body>
+</html>

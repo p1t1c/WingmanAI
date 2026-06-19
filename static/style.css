@@ -66,3 +66,31 @@ a:hover { text-decoration: underline; }
 .lede { color: var(--muted); max-width: 620px; margin: 0 auto 28px; font-size: 1.05rem; }
 .microcopy { margin-top: 14px; color: var(--muted); font-size: .9rem; }
 .foot { text-align: center; color: var(--muted); padding: 30px 20px; }
+
+/* Auth pages */
+.auth-card {
+  max-width: 420px; margin: 60px auto; padding: 28px;
+  background: var(--panel); border: 1px solid #21212d; border-radius: var(--radius);
+}
+.auth-card h1 { margin-top: 0; font-size: 1.4rem; }
+.auth-card form { display: grid; gap: 14px; }
+label { display: grid; gap: 6px; color: var(--muted); font-size: 14px; }
+input, textarea, select {
+  background: var(--panel-2); color: var(--text);
+  border: 1px solid #2a2a36; border-radius: 10px; padding: 10px 12px;
+  font: inherit; outline: none; width: 100%;
+}
+input:focus, textarea:focus, select:focus { border-color: var(--accent); }
+textarea { resize: vertical; min-height: 60px; }
+.flash {
+  padding: 10px 12px; border-radius: 10px;
+  background: rgba(231,76,60,.15); color: #ffb4ac;
+  border: 1px solid rgba(231,76,60,.3); margin-bottom: 12px;
+}
+
+/* Authed app shell */
+.app .pane { padding: 24px 20px; max-width: 1100px; margin: 0 auto; }
+.navlink {
+  padding: 8px 12px; border-radius: 8px; color: var(--muted);
+}
+.navlink.active, .navlink:hover { color: var(--text); background: var(--panel-2); text-decoration: none; }

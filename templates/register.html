@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sign up — AI Wingman</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="auth">
+<header class="topbar">
+  <a class="brand" href="/">AI Wingman</a>
+  <nav>
+    <a href="/login" class="btn btn-ghost">Login</a>
+  </nav>
+</header>
+<main class="auth-card">
+  <h1>Make an account. No vibes left behind.</h1>
+  {% with messages = get_flashed_messages() %}
+    {% for m in messages %}<div class="flash">{{ m }}</div>{% endfor %}
+  {% endwith %}
+  <form method="post">
+    <label>Username
+      <input name="username" autocomplete="username" required minlength="3" maxlength="40">
+    </label>
+    <label>Password
+      <input name="password" type="password" autocomplete="new-password" required minlength="6">
+    </label>
+    <button class="btn btn-primary btn-xl" type="submit">Sign me up</button>
+  </form>
+  <p class="microcopy">Already chaotic? <a href="/login">Log in.</a></p>
+</main>
+</body>
+</html>
