@@ -54,10 +54,19 @@ def sanitize_text(value: str | None, max_len: int = 2000) -> str:
 
 
 def login_required(f: Callable) -> Callable:
-    """Redirect to /login if no session, or return 401 JSON for /api/ routes."""
+    """Redirect to /login if no session, or return 401 JSON for /api/ routes.
+
+    Also validates that the session's user_id still points to a real user — if
+    the DB was wiped or the user deleted, we kill the stale cookie instead of
+    letting downstream queries fail on a foreign-key constraint.
+    """
     @wraps(f)
     def wrapper(*args, **kwargs):
-        if "user_id" not in session:
+        user_id = session.get("user_id")
+        if user_id is not None and db.get_user_by_id(user_id) is None:
+            session.clear()
+            user_id = None
+        if user_id is None:
             if request.path.startswith("/api/"):
                 return jsonify({"error": "not logged in"}), 401
             return redirect(url_for("login"))
