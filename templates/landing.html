@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AI Wingman — never get left on read again</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="landing">
+<header class="topbar">
+  <a class="brand" href="/">AI Wingman</a>
+  <nav>
+    {% if logged_in %}
+      <a href="/app" class="btn btn-ghost">Open app</a>
+      <a href="/logout" class="btn btn-ghost">Logout</a>
+    {% else %}
+      <a href="/login" class="btn btn-ghost">Login</a>
+      <a href="/register" class="btn btn-primary">Get started</a>
+    {% endif %}
+  </nav>
+</header>
+
+<main class="hero">
+  <p class="kicker">your texts are mid. we can fix that.</p>
+  <h1>AI Wingman reads your chats so you never get left on read again.</h1>
+  <p class="lede">
+    Drop in your conversation. We score the vibe, roast your texting,
+    and hand you three replies — one safe, one bold, one absolutely deranged.
+  </p>
+  <a href="/register" class="btn btn-primary btn-xl">Make me dangerous →</a>
+  <p class="microcopy">No therapist. No judgment. Just rizz, in a backend.</p>
+</main>
+
+<footer class="foot">
+  <p>Made for the hackathon. Use responsibly. Or don't, idc.</p>
+</footer>
+</body>
+</html>

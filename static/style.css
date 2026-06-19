@@ -1,0 +1,68 @@
+/* AI Wingman — global styles. Dark, hot, mobile-first. */
+:root {
+  --bg: #0b0b0f;
+  --panel: #14141b;
+  --panel-2: #1c1c26;
+  --text: #f4f4f8;
+  --muted: #9999a8;
+  --accent: #ff2d87;
+  --accent-2: #7c3aed;
+  --green: #2ecc71;
+  --yellow: #f1c40f;
+  --red: #e74c3c;
+  --radius: 14px;
+}
+* { box-sizing: border-box; }
+html, body {
+  margin: 0; padding: 0;
+  background: var(--bg);
+  color: var(--text);
+  font: 16px/1.45 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+.hidden { display: none !important; }
+
+/* Topbar */
+.topbar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 20px; border-bottom: 1px solid #20202a;
+  position: sticky; top: 0; z-index: 5;
+  background: rgba(11,11,15,.85); backdrop-filter: blur(10px);
+}
+.brand { font-weight: 900; font-size: 1.15rem; color: var(--text); letter-spacing: -.02em; }
+.topbar nav { display: flex; gap: 8px; flex-wrap: wrap; }
+
+/* Buttons */
+.btn {
+  border: 0; cursor: pointer; padding: 10px 16px; border-radius: 10px;
+  font-weight: 700; font-size: 14px;
+  color: var(--text); background: var(--panel-2);
+  transition: transform .05s ease, background .15s, border-color .15s;
+}
+.btn:hover { transform: translateY(-1px); }
+.btn:active { transform: translateY(0); }
+.btn-primary { background: var(--accent); color: white; }
+.btn-primary:hover { background: #ff4e9c; }
+.btn-ghost { background: transparent; color: var(--text); border: 1px solid #2a2a36; }
+.btn-xl { padding: 14px 22px; font-size: 16px; }
+
+/* Landing */
+.hero {
+  max-width: 880px; margin: 0 auto; padding: 64px 20px 32px; text-align: center;
+}
+.kicker {
+  color: var(--accent); text-transform: uppercase; letter-spacing: .1em;
+  font-weight: 800; font-size: 12px;
+}
+.hero h1 {
+  font-size: clamp(2rem, 6vw, 4rem);
+  font-weight: 900; letter-spacing: -.03em; line-height: 1.05;
+  margin: 12px 0 14px;
+  background: linear-gradient(180deg, #fff, #ffd0e6);
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+.lede { color: var(--muted); max-width: 620px; margin: 0 auto 28px; font-size: 1.05rem; }
+.microcopy { margin-top: 14px; color: var(--muted); font-size: .9rem; }
+.foot { text-align: center; color: var(--muted); padding: 30px 20px; }

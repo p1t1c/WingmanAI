@@ -1,0 +1,12 @@
+.env
+wingman.db
+venv/
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+.vscode/
+.idea/
+*.log
+.DS_Store
+Thumbs.db
