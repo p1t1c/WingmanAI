@@ -58,6 +58,13 @@
               </label>
             </div>
             <button class="btn btn-primary" id="btn-add-msg">Add message</button>
+            <hr>
+            <label>Or upload a chat screenshot (Wingman reads who-said-what)
+              <input id="chat-screenshot" type="file" accept="image/png,image/jpeg,image/webp">
+            </label>
+            <button class="btn btn-ghost" id="btn-upload-chat" type="button">
+              Extract messages from screenshot
+            </button>
           </div>
         </details>
       </section>
@@ -88,23 +95,41 @@
   <div class="modal-card">
     <button class="modal-close" id="btn-close-modal" aria-label="Close">&times;</button>
     <h3>New persona</h3>
+    <div class="modal-tabs">
+      <button class="tab active" data-tab="interview" type="button">Interview</button>
+      <button class="tab" data-tab="upload" type="button">Profile screenshot</button>
+    </div>
     <div class="modal-body">
-      <label>Their name or nickname
-        <input id="i-name" maxlength="60" placeholder="Sam from Hinge">
-      </label>
-      <label>Where did you meet?
-        <input id="i-where" maxlength="300" placeholder="dating app / IRL / friend's party">
-      </label>
-      <label>Their vibe in a few words
-        <input id="i-vibe" maxlength="300" placeholder="ironic, into rock climbing, way too into the Sopranos">
-      </label>
-      <label>Current stage
-        <input id="i-stage" maxlength="300" placeholder="been talking 4 days, no meet yet">
-      </label>
-      <label>Anything extra (red flags? inside jokes? shared interests?)
-        <textarea id="i-extra" rows="2" maxlength="500"></textarea>
-      </label>
-      <button class="btn btn-primary btn-xl" id="btn-make-interview">Create persona</button>
+      <section id="tab-interview" class="tab-pane active">
+        <label>Their name or nickname
+          <input id="i-name" maxlength="60" placeholder="Sam from Hinge">
+        </label>
+        <label>Where did you meet?
+          <input id="i-where" maxlength="300" placeholder="dating app / IRL / friend's party">
+        </label>
+        <label>Their vibe in a few words
+          <input id="i-vibe" maxlength="300" placeholder="ironic, into rock climbing, way too into the Sopranos">
+        </label>
+        <label>Current stage
+          <input id="i-stage" maxlength="300" placeholder="been talking 4 days, no meet yet">
+        </label>
+        <label>Anything extra (red flags? inside jokes? shared interests?)
+          <textarea id="i-extra" rows="2" maxlength="500"></textarea>
+        </label>
+        <button class="btn btn-primary btn-xl" id="btn-make-interview">Create persona</button>
+      </section>
+      <section id="tab-upload" class="tab-pane">
+        <label>Their name or nickname
+          <input id="u-name" maxlength="60" placeholder="Sam from Hinge">
+        </label>
+        <label>Upload their profile screenshot (jpg / png / webp, max 8 MB)
+          <input id="u-image" type="file" accept="image/png,image/jpeg,image/webp">
+        </label>
+        <p class="microcopy">
+          Wingman reads the bio and writes the persona for you.
+        </p>
+        <button class="btn btn-primary btn-xl" id="btn-make-upload">Create persona</button>
+      </section>
     </div>
   </div>
 </div>

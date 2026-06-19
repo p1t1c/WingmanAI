@@ -234,7 +234,20 @@ textarea { resize: vertical; min-height: 60px; }
   padding: 20px;
 }
 .modal-card h3 { margin: 0 0 14px; }
-.modal-body { display: grid; gap: 12px; }
+.modal-tabs { display: flex; gap: 8px; margin-bottom: 14px; }
+.modal-tabs .tab {
+  flex: 1; padding: 10px; background: var(--panel-2); border: 1px solid #2a2a36;
+  border-radius: 10px; color: var(--muted); cursor: pointer;
+  font-weight: 600; font-family: inherit;
+}
+.modal-tabs .tab.active {
+  color: var(--text); border-color: var(--accent);
+  background: rgba(255,45,135,.1);
+}
+.tab-pane { display: none; gap: 12px; flex-direction: column; }
+.tab-pane.active { display: flex; }
+.modal-body { display: block; }
+.msg-form hr { border: none; border-top: 1px dashed #2a2a36; margin: 6px 0; }
 .modal-close {
   position: absolute; top: 8px; right: 10px; background: none; border: none;
   color: var(--muted); font-size: 1.8rem; cursor: pointer; line-height: 1;

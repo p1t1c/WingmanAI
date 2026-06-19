@@ -33,6 +33,15 @@ async function apiDelete(url) {
   if (!r.ok) throw new Error(`DELETE ${url} -> ${r.status}`);
   return r.json();
 }
+async function apiForm(url, formData) {
+  const r = await fetch(url, { method: "POST", body: formData });
+  if (!r.ok) {
+    let msg = `POST ${url} -> ${r.status}`;
+    try { const j = await r.json(); if (j.error) msg = j.error; } catch {}
+    throw new Error(msg);
+  }
+  return r.json();
+}
 
 function escapeHtml(s) {
   return String(s).replace(/[&<>"']/g, (c) => ({
@@ -56,9 +65,21 @@ function bindMainEvents() {
   $("btn-new-persona").onclick = () => $("persona-modal").classList.remove("hidden");
   $("btn-close-modal").onclick = () => $("persona-modal").classList.add("hidden");
   $("btn-make-interview").onclick = makeInterviewPersona;
+  $("btn-make-upload").onclick = makeUploadPersona;
   $("btn-delete").onclick = deletePersona;
   $("btn-add-msg").onclick = addMessageTyped;
+  $("btn-upload-chat").onclick = uploadChatScreenshot;
   $("btn-suggest").onclick = generateSuggestions;
+  for (const tab of document.querySelectorAll(".modal-tabs .tab")) {
+    tab.onclick = () => {
+      for (const t of document.querySelectorAll(".modal-tabs .tab")) {
+        t.classList.toggle("active", t === tab);
+      }
+      for (const p of document.querySelectorAll(".tab-pane")) {
+        p.classList.toggle("active", p.id === "tab-" + tab.dataset.tab);
+      }
+    };
+  }
 }
 
 async function refreshPersonas() {
@@ -174,6 +195,52 @@ function renderReplies(replies) {
       }
     };
     out.appendChild(div);
+  }
+}
+
+async function makeUploadPersona() {
+  const name = $("u-name").value.trim();
+  const file = $("u-image").files[0];
+  if (!name) { alert("Give them a name first."); return; }
+  if (!file) { alert("Pick a screenshot first."); return; }
+  const fd = new FormData();
+  fd.append("name", name);
+  fd.append("image", file);
+  try {
+    showSpinner("Reading their profile...");
+    const created = await apiForm("/api/persona/screenshot", fd);
+    $("persona-modal").classList.add("hidden");
+    $("u-name").value = "";
+    $("u-image").value = "";
+    await refreshPersonas();
+    await selectPersona(created.id);
+  } catch (e) {
+    alert("Couldn't read that profile. " + (e.message || "Try a clearer pic."));
+  } finally {
+    hideSpinner();
+  }
+}
+
+async function uploadChatScreenshot() {
+  if (!state.personaId) return;
+  const file = $("chat-screenshot").files[0];
+  if (!file) { alert("Pick a screenshot first."); return; }
+  const fd = new FormData();
+  fd.append("image", file);
+  try {
+    showSpinner("Extracting messages...");
+    const data = await apiForm(
+      `/api/persona/${state.personaId}/screenshot`, fd
+    );
+    $("chat-screenshot").value = "";
+    if (data.saved === 0) {
+      alert("Wingman couldn't read any messages in that. Try a clearer screenshot.");
+    }
+    await selectPersona(state.personaId);
+  } catch (e) {
+    alert("Vision couldn't parse that. " + (e.message || ""));
+  } finally {
+    hideSpinner();
   }
 }
 

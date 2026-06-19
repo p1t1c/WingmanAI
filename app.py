@@ -23,6 +23,8 @@ import db
 from gemini import (
     FALLBACK_REPLIES,
     ask_gemini,
+    build_chat_extraction_prompt,
+    build_persona_from_image_prompt,
     build_persona_from_interview_prompt,
     build_suggestions_prompt,
     parse_json_or_fallback,
@@ -32,6 +34,9 @@ load_dotenv()
 
 app = Flask(__name__)
 app.secret_key = os.environ.get("FLASK_SECRET_KEY") or secrets.token_hex(32)
+app.config["MAX_CONTENT_LENGTH"] = 8 * 1024 * 1024  # 8 MB upload cap
+
+ALLOWED_IMAGE_MIMES = {"image/jpeg", "image/png", "image/webp", "image/heic", "image/heif"}
 
 db.init_db()
 
@@ -270,6 +275,81 @@ def api_suggest(persona_id: int):
         "vibe_note": note,
         "replies": clean_replies,
     })
+
+
+@app.route("/api/persona/screenshot", methods=["POST"])
+@login_required
+def api_persona_screenshot():
+    """Create a persona from a dating profile screenshot via Gemini Vision."""
+    name = sanitize_text(request.form.get("name"), 60)
+    if not name:
+        return jsonify({"error": "name is required"}), 400
+    file = request.files.get("image")
+    if file is None or not file.filename:
+        return jsonify({"error": "image is required"}), 400
+    mime = (file.mimetype or "image/jpeg").lower()
+    if mime not in ALLOWED_IMAGE_MIMES:
+        return jsonify({"error": "image type not supported. use jpg/png/webp"}), 400
+    img_bytes = file.read()
+    if not img_bytes:
+        return jsonify({"error": "image was empty"}), 400
+    description = ask_gemini(
+        build_persona_from_image_prompt(),
+        image=img_bytes,
+        image_mime=mime,
+    )
+    persona_id = db.create_persona(
+        current_user_id(), name, description, "screenshot"
+    )
+    return jsonify({"id": persona_id, "name": name, "description": description})
+
+
+@app.route("/api/persona/<int:persona_id>/screenshot", methods=["POST"])
+@login_required
+def api_chat_screenshot(persona_id: int):
+    """Extract messages from a chat screenshot and save them under a persona."""
+    if _require_persona(persona_id) is None:
+        return jsonify({"error": "not found"}), 404
+    file = request.files.get("image")
+    if file is None or not file.filename:
+        return jsonify({"error": "image is required"}), 400
+    mime = (file.mimetype or "image/jpeg").lower()
+    if mime not in ALLOWED_IMAGE_MIMES:
+        return jsonify({"error": "image type not supported. use jpg/png/webp"}), 400
+    img_bytes = file.read()
+    if not img_bytes:
+        return jsonify({"error": "image was empty"}), 400
+    raw = ask_gemini(
+        build_chat_extraction_prompt(),
+        image=img_bytes,
+        image_mime=mime,
+        temperature=0.2,
+    )
+    parsed = parse_json_or_fallback(raw, [])
+    items = parsed if isinstance(parsed, list) else parsed.get("items", [])
+    saved = 0
+    for m in items:
+        if not isinstance(m, dict):
+            continue
+        sender = m.get("sender")
+        content = sanitize_text(m.get("content"), 2000)
+        if sender in ("me", "them") and content:
+            db.add_message(persona_id, sender, content)
+            saved += 1
+    return jsonify({"saved": saved})
+
+
+# ---------- Error handlers ----------
+
+@app.errorhandler(413)
+def too_big(_e):
+    """Funny message when the user yeets a 50 MB screenshot at us."""
+    return jsonify({"error": "image too chunky. 8 MB max — try compressing."}), 413
+
+
+@app.errorhandler(404)
+def not_found(_e):
+    return jsonify({"error": "not found"}), 404
 
 
 if __name__ == "__main__":
