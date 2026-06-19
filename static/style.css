@@ -31,11 +31,51 @@ a:hover { text-decoration: underline; }
   position: sticky; top: 0; z-index: 5;
   background: rgba(11,11,15,.85); backdrop-filter: blur(10px);
 }
-.brand { font-weight: 900; font-size: 1.15rem; color: var(--text); letter-spacing: -.02em; }
-.topbar nav { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
-@media (max-width: 480px) {
-  .topbar { padding: 10px 14px; }
-  .topbar nav .btn, .topbar nav .navlink { padding: 8px 10px; font-size: 13px; }
+.brand {
+  font-weight: 900; font-size: 1.15rem; color: var(--text);
+  letter-spacing: -.02em; white-space: nowrap; flex-shrink: 0;
+}
+.topbar nav { display: flex; gap: 6px; align-items: center; }
+
+/* Bottom tab bar — shown only on mobile, replaces top nav links */
+.bottom-tabs { display: none; }
+
+@media (max-width: 720px) {
+  .topbar { padding: 12px 16px; }
+  .topbar nav .navlink { display: none; }
+  /* Keep Login / Sign up buttons in topbar on landing pages */
+  .topbar nav .btn { padding: 8px 12px; font-size: 13px; }
+  .bottom-tabs {
+    display: flex; position: fixed; left: 0; right: 0; bottom: 0; z-index: 30;
+    background: rgba(11,11,15,.96); backdrop-filter: blur(12px);
+    border-top: 1px solid #20202a;
+    padding: 6px 4px calc(env(safe-area-inset-bottom, 0px) + 6px);
+  }
+  .bottom-tabs .btab {
+    flex: 1; display: flex; flex-direction: column; align-items: center;
+    justify-content: center; gap: 2px; padding: 6px 4px;
+    color: var(--muted); text-decoration: none;
+    border-radius: 10px; min-width: 0;
+  }
+  .bottom-tabs .btab.active { color: var(--accent); background: rgba(255,45,135,.08); }
+  .bottom-tabs .btab-ico { width: 22px; height: 22px; flex-shrink: 0; }
+  .bottom-tabs .btab-label { font-size: 11px; font-weight: 600; }
+  /* Lift content above the fixed bar so it isn't clipped */
+  body.app { padding-bottom: 70px; }
+
+  /* No visible scrollbars on phone — scrolling still works */
+  html, body, .chat, .archive-chat, .modal-card, .pane, .layout, .sidebar {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  html::-webkit-scrollbar,
+  body::-webkit-scrollbar,
+  .chat::-webkit-scrollbar,
+  .archive-chat::-webkit-scrollbar,
+  .modal-card::-webkit-scrollbar,
+  .pane::-webkit-scrollbar,
+  .layout::-webkit-scrollbar,
+  .sidebar::-webkit-scrollbar { display: none; width: 0; height: 0; }
 }
 
 /* Buttons */
